@@ -1,0 +1,82 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+	 <!--  扫描控制层 -->
+	 <context:component-scan base-package="com.zrysj.controller"></context:component-scan>
+
+	
+	<!--  试图解析器 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 配置逻辑试图的前缀 -->
+		<property name="prefix" value="/WEB-INF/jsp/"></property> 
+		<!-- 配置逻辑试图的后缀  -->
+		 <property name="suffix" value=".jsp"></property> 
+	</bean>
+	
+	 <!-- 自定义参数绑定格式 -->
+	 <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+	 	<property name="converters">
+	 		<set>
+	 			<bean class="com.zrysj.util.DateConverter"></bean>
+	 		</set>
+	 	</property>
+	 </bean>
+	<mvc:annotation-driven conversion-service="conversionService" >
+		   <mvc:message-converters>    
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">    
+                <property name="supportedMediaTypes">    
+                    <list>                          
+                        <value>text/html;charset=UTF-8</value><!-- 避免IE出现下载JSON文件的情况 -->    
+                    </list>    
+                </property>    
+                <property name="objectMapper">    
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">  
+                        <!-- 处理responseBody 里面日期类型 -->    
+                        <property name="dateFormat">    
+                            <bean class="java.text.SimpleDateFormat">    
+                                <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss" />    
+                            </bean>    
+                        </property>   
+                        <!-- 为null字段时不显示 -->  
+                        <property name="serializationInclusion">  
+                            <value type="com.fasterxml.jackson.annotation.JsonInclude.Include">NON_NULL</value>  
+                        </property>   
+                    </bean>    
+                </property>    
+            </bean>    
+        </mvc:message-converters>      
+	</mvc:annotation-driven> 
+       
+	 <!-- 文件上传,id必须设置为multipartResolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 设置文件上传大小 -->
+		<property name="maxUploadSize" value="5000000" />
+	</bean>
+	 <!-- 配置拦截器  -->
+	 
+	 
+	 <mvc:interceptors>
+	 	<mvc:interceptor>
+	 		<!--  拦截路径   拦截所所有 action   -->
+	 		<mvc:mapping path="/**"/>
+	 		<bean class="com.zrysj.util.MyInterceptor"></bean>
+	 	</mvc:interceptor>
+	 </mvc:interceptors>
+	 
+	 
+</beans>
